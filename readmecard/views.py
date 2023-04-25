@@ -4,12 +4,32 @@ import locale
 import logging
 from json import JSONDecodeError
 
+from django.template.loader import get_template
+from django.template import Context
+
 from django.http import HttpResponse
 from .images import UNKNOWN, UNRATED, BRONZE, SILVER, GOLD, PLATINUM, DIAMOND, RUBY, MASTER, PER
+from django.urls import reverse
+from django.shortcuts import render
 
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
 logger = logging.getLogger('testlogger')
+
+def svg_chart(request):
+    # chart.html 템플릿 로드
+    with open('chart1.html', 'r') as f:
+        chart_html = f.read()
+    
+    # 템플릿 렌더링
+    context = Context({'foo': 'bar'})
+    rendered_template = chart_html.render(context)
+    
+    # SVG 형식으로 변환하여 HttpResponse 반환
+    response = HttpResponse(content_type='image/svg+xml')
+    response.write(rendered_template)
+    
+    return response
 
 # Create your views here.
 TIERS = (
@@ -142,16 +162,18 @@ def generate_badge(request):
     MAX_LEN = 15
     url_set = UrlSettings(request, MAX_LEN)
     handle_set = BojDefaultSettings(request, url_set)
+    chart_img = svg_chart(request)
     svg = '''
     <!DOCTYPE svg PUBLIC
         "-//W3C//DTD SVG 1.1//EN"
         "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg height="200" width="600"
+    <svg height="200" width="600"
     version="1.1"
     xmlns="http://www.w3.org/2000/svg"
     xmlns:xlink="http://www.w3.org/1999/xlink"
     xml:space="preserve">
     <style type="text/css">
+    <frame-options policy="SAMEORIGIN"/>
         <![CDATA[
             @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=block');
             @keyframes fadeIn {{
@@ -241,6 +263,7 @@ def generate_badge(request):
             }}
         ]]>
     </style>
+<frame-options policy="SAMEORIGIN"/>
     <defs>
         <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="35%">
             <stop offset="10%" style="stop-color:{color1};stop-opacity:1">
@@ -260,6 +283,7 @@ def generate_badge(request):
     <image href="{per}" x="290" y="32" height="13px" width="10px"/><text x="306" y="42" font-size="0.7em">6</text>
         <text x="190" y="66" class="repo-detail">자녀가 있는 학부모를 위한 부동산 추천 서비스</text>
     <image href="{tier_img_link}" x="18" y="12" height="160px" width="160px" class="repomon-img"/>
+    <image href="{chart_img}" x="18" y="12" height="300px" width="300px" class="repomon-img"/>
     <text x="100" y="175" class="repo-exp"><!-- 주석{tier_rank} -->Exp | 레포몬 경험치</text>
     <g class="item" style="animation-delay: 200ms">
         <text x="190" y="120" class="subtitle">Total Commit</text><text x="270" y="120" class="rate value"><!-- 주석{rate} -->17872 회</text>
@@ -277,14 +301,15 @@ def generate_badge(request):
         <line x1="270" y1="177" x2="290" y2="177" stroke-width="10" stroke="floralwhite" stroke-linecap="round"/>
         <line x1="270" y1="177" x2="390" y2="177" stroke-width="10" stroke-opacity="40%" stroke="floralwhite" stroke-linecap="round"/>
     </g>
-    <!-- 주석 <g transform="translate(190, 75)" height="24px" width="250px" class="lang-tag">
-        <image height="12px" xlink:href="https://img.shields.io/badge/HTML5-E34F26.svg?&amp;style=for-the-badge&amp;logo=HTML5&amp;logoColor=white"/><image height="12px" xlink:href="https://img.shields.io/badge/JavaScriipt-F7DF1E.svg?&amp;style=for-the-badge&amp;logo=JavaScript&amp;logoColor=black"/><image height="12px" xlink:href="https://img.shields.io/badge/CSS3-1572B6.svg?&amp;style=for-the-badge&amp;logo=CSS3&amp;logoColor=white"/>
-     </g>-->
-    <div>
-        <image height="12px" xlink:href="https://img.shields.io/badge/HTML5-E34F26.svg?&amp;style=for-the-badge&amp;logo=HTML5&amp;logoColor=white"/><image height="12px" xlink:href="https://img.shields.io/badge/JavaScriipt-F7DF1E.svg?&amp;style=for-the-badge&amp;logo=JavaScript&amp;logoColor=black"/><image height="12px" xlink:href="https://img.shields.io/badge/CSS3-1572B6.svg?&amp;style=for-the-badge&amp;logo=CSS3&amp;logoColor=white"/>
-    </div>
-
-
+    <g transform="translate(190, 75)">
+        <image height="12px" xlink:href="https://img.shields.io/badge/HTML5-E34F26.svg?&amp;style=for-the-badge&amp;logo=HTML5&amp;logoColor=white"/>
+    </g>
+    <g transform="translate(230, 75)">
+        <image height="12px" xlink:href="https://img.shields.io/badge/JavaScriipt-F7DF1E.svg?&amp;style=for-the-badge&amp;logo=JavaScript&amp;logoColor=black"/>
+    </g>
+    <g transform="translate(290, 75)">
+        <image height="12px" xlink:href="https://img.shields.io/badge/CSS3-1572B6.svg?&amp;style=for-the-badge&amp;logo=CSS3&amp;logoColor=white"/>
+    </g>
 </svg>
 
     '''.format(color1=BACKGROUND_COLOR[handle_set.tier_title][0],
@@ -301,7 +326,9 @@ def generate_badge(request):
                needed_rate=handle_set.needed_rate,
                percentage=handle_set.percentage,
                bar_size=handle_set.bar_size,
-               per=IMG[handle_set.tier_title])
+               per=IMG[handle_set.tier_title],
+               chart_img=chart_img
+               )
 
     logger.info('[/generate_badge/v2] user: {}, tier: {}'.format(url_set.boj_name, handle_set.tier_title))
     response = HttpResponse(content=svg)
