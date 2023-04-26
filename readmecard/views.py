@@ -3,34 +3,43 @@ import requests
 import locale
 import logging
 from json import JSONDecodeError
+import base64
 
-from django.template.loader import get_template
-from django.template import Context
+# This code example demonstrates how to convert HTML document to PNG images.
+
 
 from django.http import HttpResponse
 from .images import UNKNOWN, UNRATED, BRONZE, SILVER, GOLD, PLATINUM, DIAMOND, RUBY, MASTER, PER
 from django.urls import reverse
 from django.shortcuts import render
 
+import cairosvg
+import pygal
+
+
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
 logger = logging.getLogger('testlogger')
 
-def svg_chart(request):
-    # chart.html 템플릿 로드
-    with open('chart1.html', 'r') as f:
-        chart_html = f.read()
+def svg_to_base64(svg_code):
     
-    # 템플릿 렌더링
-    context = Context({'foo': 'bar'})
-    rendered_template = chart_html.render(context)
-    
-    # SVG 형식으로 변환하여 HttpResponse 반환
-    response = HttpResponse(content_type='image/svg+xml')
-    response.write(rendered_template)
-    
-    return response
+    png_data = cairosvg.svg2png(bytestring=svg_code)
+    # PNG를 base64 문자열로 인코딩
+    b64_data = base64.b64encode(png_data).decode('utf-8')
+    image_url = f"data:image/png;base64,{b64_data}"
+    return image_url
 
+def svg_chart(request):
+
+    radar_chart = pygal.Radar()
+    radar_chart.x_labels = ['Richards', 'DeltaBlue', 'Crypto', 'RayTrace', 'EarleyBoyer', 'RegExp']
+    radar_chart.add('Exp', [6395, 8212, 7520, 7218, 12464, 1660])
+    chartspider = radar_chart.render()
+
+    chart_url = svg_to_base64(chartspider)
+
+    return chart_url
+    
 # Create your views here.
 TIERS = (
     "Unrated",
@@ -162,7 +171,6 @@ def generate_badge(request):
     MAX_LEN = 15
     url_set = UrlSettings(request, MAX_LEN)
     handle_set = BojDefaultSettings(request, url_set)
-    chart_img = svg_chart(request)
     svg = '''
     <!DOCTYPE svg PUBLIC
         "-//W3C//DTD SVG 1.1//EN"
@@ -278,12 +286,12 @@ def generate_badge(request):
         </linearGradient>
     </defs>
     <rect width="600" height="200" rx="10" ry="10" class="background"/>
-
+    
     <text x="190" y="43" class="boj-handle"><!-- 주석{boj_handle} -->아이유정</text>
     <image href="{per}" x="290" y="32" height="13px" width="10px"/><text x="306" y="42" font-size="0.7em">6</text>
+    <image href="{chartjjin}" x="410" y="70" width="160px"/><text x="306" y="42" font-size="0.7em">6</text>
         <text x="190" y="66" class="repo-detail">자녀가 있는 학부모를 위한 부동산 추천 서비스</text>
     <image href="{tier_img_link}" x="18" y="12" height="160px" width="160px" class="repomon-img"/>
-    <image href="{chart_img}" x="18" y="12" height="300px" width="300px" class="repomon-img"/>
     <text x="100" y="175" class="repo-exp"><!-- 주석{tier_rank} -->Exp | 레포몬 경험치</text>
     <g class="item" style="animation-delay: 200ms">
         <text x="190" y="120" class="subtitle">Total Commit</text><text x="270" y="120" class="rate value"><!-- 주석{rate} -->17872 회</text>
@@ -310,8 +318,8 @@ def generate_badge(request):
     <g transform="translate(290, 75)">
         <image height="12px" xlink:href="https://img.shields.io/badge/CSS3-1572B6.svg?&amp;style=for-the-badge&amp;logo=CSS3&amp;logoColor=white"/>
     </g>
+    
 </svg>
-
     '''.format(color1=BACKGROUND_COLOR[handle_set.tier_title][0],
                color2=BACKGROUND_COLOR[handle_set.tier_title][1],
                color3=BACKGROUND_COLOR[handle_set.tier_title][2],
@@ -327,8 +335,10 @@ def generate_badge(request):
                percentage=handle_set.percentage,
                bar_size=handle_set.bar_size,
                per=IMG[handle_set.tier_title],
-               chart_img=chart_img
+               chartjjin=svg_chart(handle_set.rate)
                )
+
+
 
     logger.info('[/generate_badge/v2] user: {}, tier: {}'.format(url_set.boj_name, handle_set.tier_title))
     response = HttpResponse(content=svg)
