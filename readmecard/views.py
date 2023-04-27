@@ -16,14 +16,17 @@ from django.shortcuts import render
 import cairosvg
 import pygal
 from pygal.style import Style
-
+from .models import User
 
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
 logger = logging.getLogger('testlogger')
 
+def test(request):
+    users = User.objects.all()
+    return render(request, 'index.html', {"users": users})
+
 def svg_to_base64(svg_code):
-    
     png_data = cairosvg.svg2png(bytestring=svg_code)
     # PNG를 base64 문자열로 인코딩
     b64_data = base64.b64encode(png_data).decode('utf-8')
@@ -45,7 +48,6 @@ def svg_chart(request):
         major_guide_stroke_color = 'white',
         opacity = '1',
         major_label_font_size = 20,
-        # label_font_size=25
     )
     radar_chart = pygal.Radar(width=520,height=500,show_major_y_labels=False,show_minor_y_labels=False,y_labels_major_every=2,fill=True,style=custom_style,show_legend=False)
     radar_chart.x_labels = ['', '', '', '', '', '']
@@ -65,17 +67,14 @@ def svg_chart2(request):
         foreground_subtle='#FFFFFF',
         foreground_strong='#FFFFFF',
         foreground='#FFFFFF',
-        colors=('#E853A0', '#E8537A', '#E95355', '#E87653', '#E89B53', '#E89B53', '#E89B53', '#E89B53'),
+        colors=('#FFC1C1', '#E8537A', '#E95355', '#E87653', '#E89B53', '#E89B53', '#E89B53', '#E89B53'),
         guides=('#FFFFFF'),
         guide_stroke_color = 'white',
         major_guide_stroke_color = 'white',
-        major_label_font_size = 25,
-        value_label_font_size = 50,
-        no_data_font_size = 50,
-        label_font_size=25,
-        legend_font_size=25
+        opacity = '1',
+        major_label_font_size = 20,
     )
-    radar_chart = pygal.Radar(width=520,height=500,show_minor_y_labels=False,y_labels_major_every=2,fill=True,style=custom_style,show_legend=False)
+    radar_chart = pygal.Radar(width=520,height=500,show_major_y_labels=False,show_minor_y_labels=False,y_labels_major_every=2,fill=True,style=custom_style,show_legend=False)
     radar_chart.x_labels = ['Richards', 'DeltaBlue', 'Crypto', 'RayTrace', 'EarleyBoyer', 'RegExp']
     radar_chart.add('Exp', [6395, 8212, 7520, 7218, 12464, 1660])
     chartspider = radar_chart.render()
@@ -337,7 +336,7 @@ def generate_badge(request):
     <rect width="600" height="200" rx="10" ry="10" class="background"/>
     
     <text x="190" y="43" class="boj-handle"><!-- 주석{boj_handle} -->아이유정</text>
-    <image href="{per}" x="290" y="32" height="13px" width="10px"/><text x="306" y="42" font-size="0.7em">6</text>
+    <image href="{per}" x="290" y="32" height="13px" width="10px"/><text x="306" y="42" font-size="0.7em">6</text><text x="330" y="42" font-size="0.7em">23.04.20~23.04.27</text>
         <text x="190" y="66" class="repo-detail">자녀가 있는 학부모를 위한 부동산 추천 서비스</text>
     <image href="{tier_img_link}" x="18" y="12" height="160px" width="160px" class="repomon-img"/>
     <text x="100" y="175" class="repo-exp"><!-- 주석{tier_rank} -->Exp | 레포몬 경험치</text>
