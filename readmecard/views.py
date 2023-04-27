@@ -15,6 +15,7 @@ from django.shortcuts import render
 
 import cairosvg
 import pygal
+from pygal.style import Style
 
 
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
@@ -30,16 +31,61 @@ def svg_to_base64(svg_code):
     return image_url
 
 def svg_chart(request):
+    custom_style = Style(
+        background='transparent',
+        plot_background='transparent',
+        major_guide_stroke_dasharray='#FFFFFF',
+        guide_stroke_dasharray='#FFFFFF',
+        foreground_subtle='#FFFFFF',
+        foreground_strong='#FFFFFF',
+        foreground='#FFFFFF',
+        colors=('#FFC1C1', '#E8537A', '#E95355', '#E87653', '#E89B53', '#E89B53', '#E89B53', '#E89B53'),
+        guides=('#FFFFFF'),
+        guide_stroke_color = 'white',
+        major_guide_stroke_color = 'white',
+        opacity = '1',
+        major_label_font_size = 20,
+        # label_font_size=25
+    )
+    radar_chart = pygal.Radar(width=520,height=500,show_major_y_labels=False,show_minor_y_labels=False,y_labels_major_every=2,fill=True,style=custom_style,show_legend=False)
+    radar_chart.x_labels = ['', '', '', '', '', '']
+    radar_chart.add('Exp', [6395, 8212, 7520, 7218, 12464, 1660])
+    chartspider = radar_chart.render()
 
-    radar_chart = pygal.Radar()
+    response = svg_to_base64(chartspider)
+
+    return response
+    
+def svg_chart2(request):
+    custom_style = Style(
+        background='#000000',
+        plot_background='transparent',
+        major_guide_stroke_dasharray='#FFFFFF',
+        guide_stroke_dasharray='#FFFFFF',
+        foreground_subtle='#FFFFFF',
+        foreground_strong='#FFFFFF',
+        foreground='#FFFFFF',
+        colors=('#E853A0', '#E8537A', '#E95355', '#E87653', '#E89B53', '#E89B53', '#E89B53', '#E89B53'),
+        guides=('#FFFFFF'),
+        guide_stroke_color = 'white',
+        major_guide_stroke_color = 'white',
+        major_label_font_size = 25,
+        value_label_font_size = 50,
+        no_data_font_size = 50,
+        label_font_size=25,
+        legend_font_size=25
+    )
+    radar_chart = pygal.Radar(width=520,height=500,show_minor_y_labels=False,y_labels_major_every=2,fill=True,style=custom_style,show_legend=False)
     radar_chart.x_labels = ['Richards', 'DeltaBlue', 'Crypto', 'RayTrace', 'EarleyBoyer', 'RegExp']
     radar_chart.add('Exp', [6395, 8212, 7520, 7218, 12464, 1660])
     chartspider = radar_chart.render()
 
-    chart_url = svg_to_base64(chartspider)
+    # chartspider = svg_to_base64(chartspider)
 
-    return chart_url
+    response = HttpResponse(content_type='image/svg+xml')
+    response.write(chartspider)
     
+    return response
 # Create your views here.
 TIERS = (
     "Unrated",
@@ -269,6 +315,9 @@ def generate_badge(request):
                 flex-wrap: wrap;
                 justify-content: center;
             }}
+            .charttitle {{
+                font-size: 0.4em;
+            }}
         ]]>
     </style>
 <frame-options policy="SAMEORIGIN"/>
@@ -289,7 +338,6 @@ def generate_badge(request):
     
     <text x="190" y="43" class="boj-handle"><!-- 주석{boj_handle} -->아이유정</text>
     <image href="{per}" x="290" y="32" height="13px" width="10px"/><text x="306" y="42" font-size="0.7em">6</text>
-    <image href="{chartjjin}" x="410" y="70" width="160px"/><text x="306" y="42" font-size="0.7em">6</text>
         <text x="190" y="66" class="repo-detail">자녀가 있는 학부모를 위한 부동산 추천 서비스</text>
     <image href="{tier_img_link}" x="18" y="12" height="160px" width="160px" class="repomon-img"/>
     <text x="100" y="175" class="repo-exp"><!-- 주석{tier_rank} -->Exp | 레포몬 경험치</text>
@@ -318,7 +366,13 @@ def generate_badge(request):
     <g transform="translate(290, 75)">
         <image height="12px" xlink:href="https://img.shields.io/badge/CSS3-1572B6.svg?&amp;style=for-the-badge&amp;logo=CSS3&amp;logoColor=white"/>
     </g>
-    
+    <image href="{chartjjin}" x="425" y="35" height="160px" class="repomon-img"/>
+    <text x="505" y="35" class="charttitle">커밋</text>
+    <text x="580" y="70" class="charttitle">머지</text>
+    <text x="430" y="70" class="charttitle">이슈</text>
+    <text x="430" y="145" class="charttitle">리뷰</text>
+    <text x="580" y="145" class="charttitle">효율성</text>
+    <text x="505" y="180" class="charttitle">보안성</text>
 </svg>
     '''.format(color1=BACKGROUND_COLOR[handle_set.tier_title][0],
                color2=BACKGROUND_COLOR[handle_set.tier_title][1],
