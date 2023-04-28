@@ -9,7 +9,7 @@ import base64
 
 
 from django.http import HttpResponse
-from .images import UNKNOWN, UNRATED, BRONZE, SILVER, GOLD, PLATINUM, DIAMOND, RUBY, MASTER, PER
+from .images import UNKNOWN, UNRATED, BRONZE, SILVER, GOLD, PLATINUM, DIAMOND, RUBY, MASTER, PER, FORK, STAR
 from django.urls import reverse
 from django.shortcuts import render
 
@@ -79,8 +79,6 @@ def svg_chart2(request):
     radar_chart.add('Exp', [6395, 8212, 7520, 7218, 12464, 1660])
     chartspider = radar_chart.render()
 
-    # chartspider = svg_to_base64(chartspider)
-
     response = HttpResponse(content_type='image/svg+xml')
     response.write(chartspider)
     
@@ -118,11 +116,14 @@ TIER_IMG_LINK = {
     'Platinum': PLATINUM,
     'Diamond': DIAMOND,
     'Ruby': RUBY,
-    'Master': MASTER
+    'Master': MASTER,
+
 }
 
 IMG = {
-    'Gold' : PER
+    'Per' : PER,
+    'Star': STAR,
+    'Fork': FORK,
 }
 
 TIER_RATES = (
@@ -138,20 +139,19 @@ TIER_RATES = (
 
 class UrlSettings(object):
     def __init__(self, request, MAX_LEN):
-        self.api_server = 'https://solved.ac/api'
-        self.boj_handle = request.GET.get("boj", "ccoco")
-        if len(self.boj_handle) > MAX_LEN:
-            self.boj_name = self.boj_handle[:(MAX_LEN - 2)] + "..."
-        else:
-            self.boj_name = self.boj_handle
-        self.user_information_url = self.api_server + \
-            '/v3/user/show?handle=' + self.boj_handle
+        self.api_server = 'https://api.github.com/repos'
+        self.name_handle = request.GET.get("name", "eunjineee")
+        self.repo_handle = request.GET.get("repo", "RepomonCard")
+        self.repo_information_url = self.api_server + '/' + self.name_handle + '/' + self.repo_handle
+        # print('🎀')
+        # print(self.repo_information_url)
 
 
 class BojDefaultSettings(object):
     def __init__(self, request, url_set):
         try:
-            self.json = requests.get(url_set.user_information_url).json()
+            self.json = requests.get(url_set.repo_information_url).json()
+            print(self.json)
             self.rating = self.json['rating']
             self.level = self.boj_rating_to_lv(self.json['rating'])
             self.solved = '{0:n}'.format(self.json['solvedCount'])
@@ -214,6 +214,9 @@ class BojDefaultSettings(object):
 
 def generate_badge(request):
     MAX_LEN = 15
+    per = IMG['Per']
+    star = IMG['Star']
+    fork = IMG['Fork']
     url_set = UrlSettings(request, MAX_LEN)
     handle_set = BojDefaultSettings(request, url_set)
     svg = '''
@@ -277,8 +280,9 @@ def generate_badge(request):
                 font-size: 1.45em;
                 opacity: 55%;
             }}
-            text.repo-exp {{
-                font-size: 1em;
+            .repo-exp {{
+                fill: #000000;
+                font-size: 0.8em;
                 font-weight: 700;
                 text-anchor: middle;
                 animation: delayFadeIn 1.8s ease-in-out forwards;
@@ -337,9 +341,12 @@ def generate_badge(request):
     
     <text x="190" y="43" class="boj-handle"><!-- 주석{boj_handle} -->아이유정</text>
     <image href="{per}" x="290" y="32" height="13px" width="10px"/><text x="306" y="42" font-size="0.7em">6</text><text x="330" y="42" font-size="0.7em">23.04.20~23.04.27</text>
+    <image href="{star}" x="500" y="10" width="12px"/><text x="516" y="20" font-size="0.7em">257</text>
+    <image href="{fork}" x="546" y="10" width="9px"/><text x="560" y="20" font-size="0.7em">3.2k</text>
         <text x="190" y="66" class="repo-detail">자녀가 있는 학부모를 위한 부동산 추천 서비스</text>
     <image href="{tier_img_link}" x="18" y="12" height="160px" width="160px" class="repomon-img"/>
-    <text x="100" y="175" class="repo-exp"><!-- 주석{tier_rank} -->Exp | 레포몬 경험치</text>
+    <line x1="40" y1="170" x2="150" y2="170" stroke-width="20" stroke="floralwhite" stroke-linecap="round"/>
+    <text x="100" y="175" dz="-20" class="repo-exp"><!-- 주석{tier_rank} -->Exp | 156132</text>
     <g class="item" style="animation-delay: 200ms">
         <text x="190" y="120" class="subtitle">Total Commit</text><text x="270" y="120" class="rate value"><!-- 주석{rate} -->17872 회</text>
     </g>
@@ -349,12 +356,12 @@ def generate_badge(request):
     <g class="item" style="animation-delay: 600ms">
         <text x="190" y="160" class="subtitle">Security</text><text x="260" y="160" class="class value"></text>
         <line x1="270" y1="157" x2="290" y2="157" stroke-width="10" stroke="floralwhite" stroke-linecap="round"/>
-        <line x1="270" y1="157" x2="390" y2="157" stroke-width="10" stroke-opacity="40%" stroke="floralwhite" stroke-linecap="round"/>
+        <line x1="270" y1="157" x2="360" y2="157" stroke-width="10" stroke-opacity="40%" stroke="floralwhite" stroke-linecap="round"/>
     </g>
     <g class="item" style="animation-delay: 600ms">
         <text x="190" y="180" class="subtitle">Efficiency</text><text x="260" y="160" class="class value"></text>
         <line x1="270" y1="177" x2="290" y2="177" stroke-width="10" stroke="floralwhite" stroke-linecap="round"/>
-        <line x1="270" y1="177" x2="390" y2="177" stroke-width="10" stroke-opacity="40%" stroke="floralwhite" stroke-linecap="round"/>
+        <line x1="270" y1="177" x2="360" y2="177" stroke-width="10" stroke-opacity="40%" stroke="floralwhite" stroke-linecap="round"/>
     </g>
     <g transform="translate(190, 75)">
         <image height="12px" xlink:href="https://img.shields.io/badge/HTML5-E34F26.svg?&amp;style=for-the-badge&amp;logo=HTML5&amp;logoColor=white"/>
@@ -387,7 +394,9 @@ def generate_badge(request):
                needed_rate=handle_set.needed_rate,
                percentage=handle_set.percentage,
                bar_size=handle_set.bar_size,
-               per=IMG[handle_set.tier_title],
+               per=per,
+               star=star,
+               fork=fork,
                chartjjin=svg_chart(handle_set.rate)
                )
 
