@@ -1,9 +1,11 @@
 from django.urls import path
-from .views import generate_badge, svg_chart, svg_chart2, test
+from .views import repo_card, repo_personal_card, user_card, svg_chart, test
 
 urlpatterns = [
-    path('generate_badge', generate_badge),
+    path('repo', repo_card),
+    path('repo_personal', repo_personal_card),
+    path('user', user_card),
     path('chart/', svg_chart, name='chart'),
-    path('chart2/', svg_chart2, name='chart2'),
+    # path('chart2/', svg_chart2, name='chart2'),
     path('test/', test),
 ]
