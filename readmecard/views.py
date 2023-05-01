@@ -1,4 +1,3 @@
-import os
 import requests
 import locale
 import logging
@@ -15,15 +14,10 @@ from django.shortcuts import render
 import cairosvg
 import pygal
 from pygal.style import Style
-from .models import User
 
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
 logger = logging.getLogger('testlogger')
-
-def test(request):
-    users = User.objects.all()
-    return render(request, 'index.html', {"users": users})
 
 
 def svg_to_base64(svg_code):
