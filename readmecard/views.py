@@ -9,7 +9,6 @@ import base64
 
 from django.http import HttpResponse
 from .images import PER, FORK, STAR, IMG
-from django.shortcuts import render
 
 import cairosvg
 import pygal
