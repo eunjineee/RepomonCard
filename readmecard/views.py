@@ -51,6 +51,31 @@ def svg_chart(request):
 
     return response
 
+def svg_chart_personal(request, request2):
+    custom_style = Style(
+        background='transparent',
+        plot_background='transparent',
+        major_guide_stroke_dasharray='#FFFFFF',
+        guide_stroke_dasharray='#FFFFFF',
+        foreground_subtle='#FFFFFF',
+        foreground_strong='#FFFFFF',
+        foreground='#FFFFFF',
+        colors=('#FFC1C1', '#E8537A', '#E95355', '#E87653', '#E89B53', '#E89B53', '#E89B53', '#E89B53'),
+        guides=('#FFFFFF'),
+        guide_stroke_color = 'white',
+        major_guide_stroke_color = 'white',
+        opacity = '0.9',
+        major_label_font_size = 20,
+    )
+    radar_chart = pygal.Radar(width=520,height=500,show_major_y_labels=False,show_minor_y_labels=False,y_labels_major_every=2,fill=True,style=custom_style,show_legend=False)
+    radar_chart.x_labels = ['', '', '', '', '', '']
+    radar_chart.add('Exp', request)
+    radar_chart.add('My Exp', request2)
+    chartspider = radar_chart.render()
+
+    response = svg_to_base64(chartspider)
+
+    return response
 
 # Create your views here.
 IMG = {
@@ -412,7 +437,7 @@ class RepoPersonalDefaultSettings(object):
             self.contribution = 33
             self.gitname = 'becoding'
             # self.gitimg = 'becoding'
-            self.chart = svg_chart([self.commits, self.merges, self.issues, self.reviews, self.efficiency, self.security])
+            self.chart = svg_chart_personal([self.commits*2, self.merges*2, self.issues*2, self.reviews*2, self.efficiency*2, self.security*2],[self.commits, self.merges, self.issues, self.reviews, self.efficiency, self.security])
 
     def day(self, day):
         if day != None:
