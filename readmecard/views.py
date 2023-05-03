@@ -8,7 +8,7 @@ import base64
 
 
 from django.http import HttpResponse
-from .images import PER, FORK, STAR, IMG, POCKET
+from .images import PER, FORK, STAR, IMG, POCKET, CHEETAH1, CHEETAH2
 
 import cairosvg
 import pygal
@@ -35,7 +35,7 @@ def svg_chart(request):
         foreground_subtle='#FFFFFF',
         foreground_strong='#FFFFFF',
         foreground='#FFFFFF',
-        colors=('#FFC1C1', '#E8537A', '#E95355', '#E87653', '#E89B53', '#E89B53', '#E89B53', '#E89B53'),
+        colors=('#989DFA', '#E8537A', '#E95355', '#E87653', '#E89B53', '#E89B53', '#E89B53', '#E89B53'),
         guides=('#FFFFFF'),
         guide_stroke_color = 'white',
         major_guide_stroke_color = 'white',
@@ -77,6 +77,7 @@ def svg_chart_personal(request, request2):
 
     return response
 
+
 # Create your views here.
 IMG = {
     'Per' : PER,
@@ -84,6 +85,8 @@ IMG = {
     'Fork': FORK,
     'Img' : IMG,
     'Pocket' : POCKET,
+    'CHEETAH1':CHEETAH1,
+    'CHEETAH2':CHEETAH2
 }
 
 
@@ -98,8 +101,9 @@ class UrlSettings(object):
         elif repo_type == 'repo_personal':
             print('🎨',repo_type)
             self.api_server = 'https://repomon.kr/api/v1/repo/'
-            self.repo_handle = request.GET.get("repoId", "5")
-            self.repo_information_url = self.api_server + '{' +'repoId' + '}' + '/card/detail?repoId=' + self.repo_handle
+            self.repo_handle = request.GET.get("repoId", "1")
+            self.user_handle = request.GET.get("userId", "1")
+            self.repo_information_url = self.api_server + '{' +'repoId' + '}' + '/card/personal?repoId=' + self.repo_handle + '&userId=' + self.user_handle
             print('🎨🖼',self.repo_information_url)
         elif repo_type == 'user':
             print('🎨',repo_type)
@@ -408,10 +412,19 @@ class RepoPersonalDefaultSettings(object):
             self.security_percent = self.percent(self.json['security'])
             self.totalcommit = self.json['totalcommit']
             self.totalcode = self.json['totalcode']
-            self.contribution = self.json['contribution']
-            self.gitname = self.json['gitname'] 
-            print(self.commits, self.merges, self.issues, self.reviews, self.efficiency, self.security)
-            self.chart = svg_chart([self.commits, self.merges, self.issues, self.reviews, self.efficiency, self.security])
+            self.contribution = self.json['mycontribution']
+            self.gitname = self.json['userName'] 
+            self.avatarUrl = self.json['avatarUrl'] 
+
+            self.mycommits = self.json['mytotalcommit']
+            self.myissues = self.json['myissues']
+            self.mymerges = self.json['mymerges']
+            self.myreviews = self.json['myreviews']
+            self.mytotalcommit = self.json['mytotalcommit']
+            self.mytotalcode = self.json['mytotalcode']
+            self.myefficiency = int(self.json['myefficiency'])            
+            self.mysecurity = int(self.json['mysecurity'])
+            self.chart = svg_chart_personal([self.commits, self.issues, self.reviews, self.security, self.efficiency, self.merges],[self.mycommits, self.myissues, self.myreviews, self.mysecurity, self.myefficiency, self.mymerges])
     
         except JSONDecodeError as e:
             logger.error(e)
@@ -461,6 +474,8 @@ def repo_personal_card(request):
     star = IMG['Star']
     fork = IMG['Fork']
     img = IMG['Img']
+    CHEETAH1 = IMG['CHEETAH1']
+    CHEETAH2 = IMG['CHEETAH2']
     url_set = UrlSettings(request, 'repo_personal')
     handle_set = RepoPersonalDefaultSettings(request, url_set)
     svg = '''
@@ -582,10 +597,10 @@ def repo_personal_card(request):
     </defs>
     <rect width="600" height="230" rx="10" ry="10" class="background"/>
     
-    <image href="{img}" x="18" y="12" height="22px" width="22px" class="repomon-img"/>
+    # <image href="{avatarUrl}" x="18" y="12" height="22px" width="22px" class="repomon-img"/>
     <text x="45" y="25" font-size="0.7em">{gitname}</text>
 
-    <image href="{img}" x="16" y="32" height="160px" width="160px" class="repomon-img"/>
+    <image href="{CHEETAH2}" x="18" y="18" width="160px" class="repomon-img"/>
     <line x1="40" y1="188" x2="150" y2="188" stroke-width="20" stroke="floralwhite" stroke-linecap="round"/>
     <text x="100" y="193" dz="-20" class="repo-exp">Exp | {repoExp}</text>
     <text x="39" y="215" font-size="0.7em">My contribution : {contribution}%</text>
@@ -609,10 +624,10 @@ def repo_personal_card(request):
     </g>
 
     <g class="item" style="animation-delay: 200ms">
-        <text x="190" y="134" class="subtitle">Total Commit</text><text x="270" y="134" class="rate value">{totalcommit} 회</text><text x="330" y="134" class="solved value2">/ {totalcommit} 줄</text>
+        <text x="190" y="134" class="subtitle">Total Commit</text><text x="270" y="134" class="rate value">{mytotalcommit} 회</text><text x="330" y="134" class="solved value2">/ {totalcommit} 줄</text>
     </g>
     <g class="item" style="animation-delay: 400ms">
-        <text x="190" y="156" class="subtitle">Total code</text><text x="270" y="156" class="solved value">{totalcode} 줄</text><text x="330" y="156" class="solved value2">/ {totalcode} 줄</text>
+        <text x="190" y="156" class="subtitle">Total code</text><text x="270" y="156" class="solved value">{mytotalcode} 줄</text><text x="330" y="156" class="solved value2">/ {totalcode} 줄</text>
     </g>
     <g class="item" style="animation-delay: 600ms">
         <text x="190" y="178" class="subtitle">Security</text><text x="260" y="178" class="class value"></text>
@@ -630,12 +645,12 @@ def repo_personal_card(request):
 
 
     <image href="{chart}" x="407" y="62" height="170px" class="repomon-img"/>
-    <text x="492" y="77" class="charttitle"> 커밋</text>
-    <text x="563" y="111" class="charttitle"> 머지</text>
-    <text x="425" y="111" class="charttitle">이슈</text>
-    <text x="425" y="183" class="charttitle">리뷰</text>
-    <text x="563" y="183" class="charttitle">효율성</text>
-    <text x="491" y="217" class="charttitle">보안성</text>
+    <text x="492" y="77" class="charttitle"> commit</text>
+    <text x="563" y="111" class="charttitle"> merge</text>
+    <text x="425" y="111" class="charttitle">issue</text>
+    <text x="425" y="183" class="charttitle">review</text>
+    <text x="563" y="183" class="charttitle">star</text>
+    <text x="491" y="217" class="charttitle">fork</text>
 </svg>
     '''.format(repoName = handle_set.repoName,
                repoDescription = handle_set.repoDescription,
@@ -645,10 +660,6 @@ def repo_personal_card(request):
                repoStart = handle_set.repoStart,
                repoEnd = handle_set.repoEnd,
                contributers = handle_set.contributers,
-               commits = handle_set.commits,
-               issues = handle_set.issues,
-               merges = handle_set.merges,
-               reviews = handle_set.reviews,
                efficiency = handle_set.efficiency,
                efficiency_percent = handle_set.efficiency_percent + 270,
                security = handle_set.security,
@@ -657,10 +668,15 @@ def repo_personal_card(request):
                totalcode = handle_set.totalcode,
                contribution = handle_set.contribution,
                gitname = handle_set.gitname,
+               avatarUrl = handle_set.avatarUrl,
+               mytotalcommit = handle_set.mytotalcommit,
+               mytotalcode = handle_set.mytotalcommit,
                per=per,
                star=star,
                fork=fork,
                img=img,
+               CHEETAH1=CHEETAH1,
+               CHEETAH2=CHEETAH2,
                chart=handle_set.chart
                )
 
