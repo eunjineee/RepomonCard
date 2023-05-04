@@ -625,9 +625,9 @@ def repo_personal_card(request):
             .elli3 {{
                 fill: #FF93B3;
                 cx: 95px;
-                cy: 155px;
-                rx: 58px;
-                ry: 20px;
+                cy: 145px;
+                rx: 60px;
+                ry: 30px;
             }}
         ]]>
     </style>
@@ -651,7 +651,8 @@ def repo_personal_card(request):
     <text x="45" y="25" font-size="0.7em">{gitname}</text>
     
     <ellipse class="{ellipsetype}"/>
-    <image href="{img}" x="24" y="52" width="140px" class="repomon-img"/>
+    <rect  x="25" y="52" width="140px" height="112px" style="stroke: red; stroke-width: 2px; fill: none;" />
+    <image href="{img}" x="25" y="52" width="140px" height="112px" class="repomon-img"/>
     <line x1="40" y1="188" x2="150" y2="188" stroke-width="20" stroke="floralwhite" stroke-linecap="round"/>
     <text x="100" y="193" dz="-20" class="repo-exp">Exp | {repoExp}</text>
     <text x="39" y="215" font-size="0.7em">My contribution : {contribution}%</text>
@@ -728,7 +729,7 @@ def repo_personal_card(request):
             #    img=IMG['img'+str(handle_set.repomonId)],
             #    ellipsetype=ELLIPSE_TYPE[handle_set.repomon_tier],
                ellipsetype=ELLIPSE_TYPE[3],
-               img=IMG['img19'],
+               img=IMG['img24'],
                chart=handle_set.chart
                )
 
@@ -738,8 +739,6 @@ def repo_personal_card(request):
     response['Cache-Control'] = 'max-age=3600'
 
     return response
-
-
 
 
 class UserDefaultSettings(object):
