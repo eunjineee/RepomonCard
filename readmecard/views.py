@@ -8,7 +8,7 @@ import base64
 
 
 from django.http import HttpResponse
-from .images import PER, FORK, STAR, IMG, POCKET, CHEETAH1, CHEETAH2
+from .images import PER, FORK, STAR, POCKET, img1,img2,img3,img4,img5,img6,img7,img8,img9,img10,img11,img12,img13,img14,img15,img16,img17,img18,img19,img20,img21,img22,img23,img24,img25,img26,img27,img28,img29,img30
 
 import cairosvg
 import pygal
@@ -83,12 +83,44 @@ IMG = {
     'Per' : PER,
     'Star': STAR,
     'Fork': FORK,
-    'Img' : IMG,
-    'Pocket' : POCKET,
-    'CHEETAH1':CHEETAH1,
-    'CHEETAH2':CHEETAH2
+    'pocket': POCKET,
+    'img1': img1,
+    'img2': img2,
+    'img3': img3,
+    'img4': img4,
+    'img5': img5,
+    'img6': img6,
+    'img7': img7,
+    'img8': img8,
+    'img9': img9,
+    'img10': img10,
+    'img11': img11,
+    'img12': img12,
+    'img13': img13,
+    'img14': img14,
+    'img15': img15,
+    'img16': img16,
+    'img17': img17,
+    'img18': img18,
+    'img19': img19,
+    'img20': img20,
+    'img21': img21,
+    'img22': img22,
+    'img23': img23,
+    'img24': img24,
+    'img25': img25,
+    'img26': img26,
+    'img27': img27,
+    'img28': img28,
+    'img29': img29,
+    'img30': img30,
 }
 
+ELLIPSE_TYPE = {
+    1 : 'elli1',
+    2 : 'elli2',
+    3 : 'elli3',
+}
 
 class UrlSettings(object):
     def __init__(self, request, repo_type):
@@ -394,6 +426,7 @@ class RepoPersonalDefaultSettings(object):
             print('🎀')
             print(self.json)
             self.repoName = self.json['repoName']
+            self.repomonId = self.json['repomonId']
             self.repoDescription = self.is_none(self.json['repoDescription'])
             self.repoExp = self.json['repoExp']
             self.starCnt = self.json['starCnt']
@@ -449,7 +482,6 @@ class RepoPersonalDefaultSettings(object):
             self.totalcode = '654321'
             self.contribution = 33
             self.gitname = 'becoding'
-            # self.gitimg = 'becoding'
             self.chart = svg_chart_personal([self.commits*2, self.merges*2, self.issues*2, self.reviews*2, self.efficiency*2, self.security*2],[self.commits, self.merges, self.issues, self.reviews, self.efficiency, self.security])
 
     def day(self, day):
@@ -473,9 +505,6 @@ def repo_personal_card(request):
     per = IMG['Per']
     star = IMG['Star']
     fork = IMG['Fork']
-    img = IMG['Img']
-    CHEETAH1 = IMG['CHEETAH1']
-    CHEETAH2 = IMG['CHEETAH2']
     url_set = UrlSettings(request, 'repo_personal')
     handle_set = RepoPersonalDefaultSettings(request, url_set)
     svg = '''
@@ -579,6 +608,27 @@ def repo_personal_card(request):
                 font-weight: 700;
                 text-anchor: middle;
             }}
+            .elli1 {{
+                fill: #FFF9C1;
+                cx: 95px;
+                cy: 155px;
+                rx: 50px;
+                ry: 15px;
+            }}
+            .elli2 {{
+                fill: #C1E9FF;
+                cx: 95px;
+                cy: 155px;
+                rx: 58px;
+                ry: 20px;
+            }}
+            .elli3 {{
+                fill: #FF93B3;
+                cx: 95px;
+                cy: 155px;
+                rx: 58px;
+                ry: 20px;
+            }}
         ]]>
     </style>
 <frame-options policy="SAMEORIGIN"/>
@@ -597,10 +647,11 @@ def repo_personal_card(request):
     </defs>
     <rect width="600" height="230" rx="10" ry="10" class="background"/>
     
-    # <image href="{avatarUrl}" x="18" y="12" height="22px" width="22px" class="repomon-img"/>
+    <image href="{avatarUrl}" x="18" y="12" height="22px" width="22px" class="repomon-img"/>
     <text x="45" y="25" font-size="0.7em">{gitname}</text>
-
-    <image href="{CHEETAH2}" x="18" y="18" width="160px" class="repomon-img"/>
+    
+    <ellipse class="{ellipsetype}"/>
+    <image href="{img}" x="24" y="52" width="140px" class="repomon-img"/>
     <line x1="40" y1="188" x2="150" y2="188" stroke-width="20" stroke="floralwhite" stroke-linecap="round"/>
     <text x="100" y="193" dz="-20" class="repo-exp">Exp | {repoExp}</text>
     <text x="39" y="215" font-size="0.7em">My contribution : {contribution}%</text>
@@ -674,9 +725,10 @@ def repo_personal_card(request):
                per=per,
                star=star,
                fork=fork,
-               img=img,
-               CHEETAH1=CHEETAH1,
-               CHEETAH2=CHEETAH2,
+            #    img=IMG['img'+str(handle_set.repomonId)],
+            #    ellipsetype=ELLIPSE_TYPE[handle_set.repomon_tier],
+               ellipsetype=ELLIPSE_TYPE[3],
+               img=IMG['img19'],
                chart=handle_set.chart
                )
 
